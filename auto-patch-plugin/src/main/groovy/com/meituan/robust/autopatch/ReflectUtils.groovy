@@ -1,6 +1,5 @@
 package com.meituan.robust.autopatch
 
-import com.android.SdkConstants
 import com.android.build.api.transform.TransformInput
 import com.meituan.robust.Constants
 import com.meituan.robust.utils.JavaUtils
@@ -18,6 +17,7 @@ import java.util.regex.Matcher
 
 class ReflectUtils {
 
+    public static final String DOT_CLASS = ".class"
     public static final Boolean INLINE_R_FILE = true;
     public static int invokeCount = 0;
 
@@ -30,8 +30,8 @@ class ReflectUtils {
                 def dirPath = it.file.absolutePath
                 classPool.insertClassPath(it.file.absolutePath)
                 FileUtils.listFiles(it.file, null, true).each {
-                    if (it.absolutePath.endsWith(SdkConstants.DOT_CLASS)) {
-                        def className = it.absolutePath.substring(dirPath.length() + 1, it.absolutePath.length() - SdkConstants.DOT_CLASS.length()).replaceAll(Matcher.quoteReplacement(File.separator), '.')
+                    if (it.absolutePath.endsWith(DOT_CLASS)) {
+                        def className = it.absolutePath.substring(dirPath.length() + 1, it.absolutePath.length() - DOT_CLASS.length()).replaceAll(Matcher.quoteReplacement(File.separator), '.')
                         classNames.add(className)
                     }
                 }
@@ -43,8 +43,8 @@ class ReflectUtils {
                 while (classes.hasMoreElements()) {
                     JarEntry libClass = classes.nextElement();
                     String className = libClass.getName();
-                    if (className.endsWith(SdkConstants.DOT_CLASS)) {
-                        className = className.substring(0, className.length() - SdkConstants.DOT_CLASS.length()).replaceAll('/', '.')
+                    if (className.endsWith(DOT_CLASS)) {
+                        className = className.substring(0, className.length() - DOT_CLASS.length()).replaceAll('/', '.')
                         classNames.add(className)
                     }
                 }

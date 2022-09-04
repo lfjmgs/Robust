@@ -1,15 +1,34 @@
 apply plugin: 'groovy'
+apply plugin: 'maven-publish'
+
 compileGroovy {
     sourceCompatibility = 1.7
     targetCompatibility = 1.7
 }
 
 dependencies {
-    compile gradleApi()
-    compile localGroovy()
-    compile 'com.android.tools.build:gradle:2.1.0'
-    compile 'org.javassist:javassist:3.20.0-GA'
+    implementation gradleApi()
+    implementation localGroovy()
+    implementation 'com.android.tools.build:gradle:7.2.2'
+    implementation 'commons-io:commons-io:2.11.0'
+    implementation 'org.javassist:javassist:3.20.0-GA'
 //    compile 'com.meituan.robust:autopatchbase:' + VERSION_NAME
-    compile project(':autopatchbase')
+    implementation project(':autopatchbase')
 }
-apply from: '../gradle_mvn_push.gradle'
+//apply from: '../gradle_mvn_push.gradle'
+
+java {
+    withSourcesJar()
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = 'com.meituan.robust'
+            artifactId = project.name
+            version = '0.4.99'
+
+            from components.java
+        }
+    }
+}

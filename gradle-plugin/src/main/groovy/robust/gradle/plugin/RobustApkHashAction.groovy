@@ -29,20 +29,26 @@ class RobustApkHashAction implements Action<Project> {
 //                def startTime = System.currentTimeMillis()
                 List<File> partFiles = new ArrayList<>()
 
-                if (isGradlePlugin300orAbove(project)){
+                if (isGradlePlugin300orAbove()){
 
                     //protected FileCollection resourceFiles;
                     FileCollection resourceFiles
-                    if (isGradlePlugin320orAbove(project)) {
-                        try {
-                            //gradle 4.6 适配
-                            resourceFiles = packageTask.resourceFiles.get()
+                    if (isGradlePlugin320orAbove()) {
+                        if (isGradlePlugin410orAbove()) {
+                            // AGP 4.1.0+ 适配
+                            resourceFiles = packageTask.resourceFiles.getAsFileTree()
                             partFiles.add(resourceFiles.getFiles())
-                        } catch (Exception e){
-                            //gradle 5.4+ & gradle tools 3.5.0+ 适配
-                            Object resFiles = packageTask.resourceFiles
-                            for (File file : resFiles){
-                                partFiles.add(file)
+                        } else {
+                            try {
+                                //gradle 4.6 适配
+                                resourceFiles = packageTask.resourceFiles.get()
+                                partFiles.add(resourceFiles.getFiles())
+                            } catch (Exception e){
+                                //gradle 5.4+ & gradle tools 3.5.0+ 适配
+                                Object resFiles = packageTask.resourceFiles
+                                for (File file : resFiles){
+                                    partFiles.add(file)
+                                }
                             }
                         }
                     } else {
@@ -87,7 +93,7 @@ class RobustApkHashAction implements Action<Project> {
                     FileCollection assets = null;
                     boolean gradleToolsBigThan350 = false;
                     try {
-                        if (isGradlePlugin320orAbove(project)) {
+                        if (isGradlePlugin320orAbove()) {
                             try {
                                 //gradle 4.6 适配
                                 assets = packageTask.assets.get()
@@ -295,6 +301,26 @@ class RobustApkHashAction implements Action<Project> {
         return compare(project.getGradle().gradleVersion, "4.6") >= 0
     }
 
+    static boolean isGradlePlugin300orAbove() {
+        // API属于AGP，应根据AGP版本判断
+        // AGP 3.0.0+
+        return compare(getGradlePluginVersion(), "3.0.0") >= 0
+    }
+
+    static boolean isGradlePlugin320orAbove() {
+        // API属于AGP，应根据AGP版本判断
+        // AGP 3.2.0+
+        //see https://developer.android.com/studio/releases/gradle-plugin
+        return compare(getGradlePluginVersion(), "3.2.0") >= 0
+    }
+
+    static boolean isGradlePlugin410orAbove() {
+        // API属于AGP，应根据AGP版本判断
+        // AGP 4.1.0+
+        //see https://developer.android.com/studio/releases/gradle-plugin
+        return compare(getGradlePluginVersion(), "4.1.0") >= 0
+    }
+
     /**
      *
      * @param lhsVersion gradle version code {@code lhsVersion}
@@ -321,16 +347,22 @@ class RobustApkHashAction implements Action<Project> {
         String version = null
         try {
             def clazz = Class.forName("com.android.builder.Version")
-            def field = clazz.getDeclaredField("ANDROID_GRADLE_PLUGIN_VERSION")
-            field.setAccessible(true)
+            def field = clazz.getField("ANDROID_GRADLE_PLUGIN_VERSION")
             version = field.get(null)
         } catch (Exception ignore) {
         }
         if (version == null) {
             try {
                 def clazz = Class.forName("com.android.builder.model.Version")
-                def field = clazz.getDeclaredField("ANDROID_GRADLE_PLUGIN_VERSION")
-                field.setAccessible(true)
+                def field = clazz.getField("ANDROID_GRADLE_PLUGIN_VERSION")
+                version = field.get(null)
+            } catch (Exception ignore) {
+            }
+        }
+        if (version == null) {
+            try {
+                def clazz = Class.forName("com.android.Version")
+                def field = clazz.getField("ANDROID_GRADLE_PLUGIN_VERSION")
                 version = field.get(null)
             } catch (Exception ignore) {
             }

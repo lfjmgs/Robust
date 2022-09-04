@@ -1,10 +1,13 @@
 apply plugin: 'com.android.library'
+apply plugin: 'maven-publish'
+
 project.archivesBaseName = 'robust'
 android {
     compileSdkVersion 24
     buildToolsVersion '25.0.2'
     defaultConfig {
         minSdkVersion 9
+        //noinspection ExpiredTargetSdkVersion
         targetSdkVersion 24
         versionCode 1
         versionName '1.0'
@@ -25,13 +28,31 @@ android {
         exclude 'META-INF/maven/commons-cli/commons-cli/pom.properties'
         exclude 'META-INF/maven/commons-cli/commons-cli/pom.xml'
     }
+    publishing {
+        singleVariant('release') {
+            withSourcesJar()
+        }
+    }
 }
 configurations.all {
     resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
 }
 dependencies {
 //    compile 'com.meituan.robust:autopatchbase:' + VERSION_NAME
-    compile project(':autopatchbase')
+    api project(':autopatchbase')
 }
 
-apply from: '../gradle_mvn_push.gradle'
+//apply from: '../gradle_mvn_push.gradle'
+publishing {
+    publications {
+        release(MavenPublication) {
+            groupId = 'com.meituan.robust'
+            artifactId = 'rubust'
+            version = '0.4.99'
+
+            afterEvaluate {
+                from components.release
+            }
+        }
+    }
+}

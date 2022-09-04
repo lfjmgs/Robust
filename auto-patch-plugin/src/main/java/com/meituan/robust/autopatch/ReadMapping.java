@@ -66,6 +66,11 @@ public class ReadMapping {
                     line = reader.readLine();
                     while (line != null) {
                         line = line.trim();
+                        if (line.startsWith("#")) {
+                            // skip comments
+                            line = reader.readLine();
+                            continue;
+                        }
                         if (line.endsWith(":")) {
                             needBacktrace = true;
                             break;
@@ -82,10 +87,6 @@ public class ReadMapping {
                             classMapping.getMemberMapping().put(lineinfo[1].trim(), lineinfo[3].trim());
                         }
                         line = reader.readLine();
-                        if (line == null) {
-                            break;
-                        }
-                        line = line.trim();
                     }
                     usedInModifiedClassMappingInfo.put(classMapping.getClassName(), classMapping);
                 }

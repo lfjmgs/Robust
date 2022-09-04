@@ -1,4 +1,22 @@
 apply plugin: 'java'
-apply from: '../gradle_mvn_push.gradle'
+apply plugin: 'maven-publish'
+//apply from: '../gradle_mvn_push.gradle'
+
 sourceCompatibility= 1.7
 targetCompatibility= 1.7
+
+java {
+    withSourcesJar()
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = 'com.meituan.robust'
+            artifactId = project.name
+            version = '0.4.99'
+
+            from components.java
+        }
+    }
+}
